@@ -25,7 +25,7 @@ vector_t* vector_crear(size_t tam) {
 }
 
 bool vector_redimensionar(vector_t* vector, size_t tam_nuevo) {
-    int* datos_nuevo = realloc(vector->datos, tam_nuevo * sizeof(int));
+    void* datos_nuevo = realloc(vector->datos, tam_nuevo * sizeof(void*));
 
     // Cuando tam_nuevo es 0, es correcto si se devuelve NULL.
     // En toda otra situación significa que falló el realloc.
@@ -55,11 +55,11 @@ void vector_destruir(vector_t* vector)
 // Pre: el vector fue creado
 // Post: se almacenó en valor el dato en la posición pos. Devuelve false si la
 // posición es inválida (fuera del rango del vector, que va de 0 a tamaño-1)
-bool vector_obtener(vector_t* vector, size_t pos, int* valor)
+bool vector_obtener(vector_t* vector, size_t pos, void* dato)
 {
 	if(pos < 0 || pos >= vector->tam)
 		return false;
-	*valor = vector->datos[pos];
+	dato = vector->datos[pos];
 	return true;
 }
 
@@ -68,11 +68,11 @@ bool vector_obtener(vector_t* vector, size_t pos, int* valor)
 // Post: se almacenó el valor en la posición pos. Devuelve false si la posición
 // es inválida (fuera del rango del vector, que va de 0 a tamaño-1) y true si
 // se guardó el valor con éxito.
-bool vector_guardar(vector_t* vector, size_t pos, int valor)
+bool vector_guardar(vector_t* vector, size_t pos, void* dato)
 {
 	if(pos < 0 || pos >= vector->tam)
 		return false;
-	vector->datos[pos] = valor;
+	vector->datos[pos] = dato;
 	return true;
 }
 
