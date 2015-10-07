@@ -30,3 +30,12 @@
 
 # Debug files
 *.dSYM/
+
+# CodeBlocks
+*.cbp
+*.layout
+*.depend
+obj/
+bin/
+*.zip
+ValgrindOut.xml
