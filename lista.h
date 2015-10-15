@@ -61,27 +61,46 @@ void* lista_ver_primero(const lista_t *lista);
 // contiene un elemento menos, si la lista no estaba vacía.
 void* lista_borrar_primero(lista_t *lista);
 
-// TODO:
-// Saca el ultimo elemento de la lista. Si la lista tiene elementos, se quita el
-// ultimo de la lista, y se devuelve su valor, si está vacía, devuelve NULL.
+// Devuelve el largo de la lista
 // Pre: la lista fue creada.
-// Post: se devolvió el valor del ultimo elemento anterior, la lista
-// contiene un elemento menos, si la lista no estaba vacía.
-// void* lista_borrar_ultimo(lista_t *lista);
-
-// TODO: DOC
+// Post: se devolvió el largo de la lista
 size_t lista_largo(const lista_t *lista);
 
-// ITER
+// Se crea un iterador de la lista
+// Pre: la lista fue creada.
+// Post: se devolvió un iterador posicionado en el primer elemento
 lista_iter_t *lista_iter_crear(const lista_t *lista);
-bool lista_iter_avanzar(lista_iter_t *iter);
-void *lista_iter_ver_actual(const lista_iter_t *iter);
+
+// Devuelve si el iterador se encuentra despues del ultimo elemento en la lista
+// Pre: el iterador fue creado
+// Post: se devolvio NULL si el iter no fue creado
 bool lista_iter_al_final(const lista_iter_t *iter);
+
+// Avanza el iterador al siguiente nodo en la lista
+// Pre: el iterador fue creado
+bool lista_iter_avanzar(lista_iter_t *iter);
+
+// Devuelve el puntero al dato alacenado en la posicion que se encuentra el iterador
+// Pre: el iterador fue creado
+// Post: Se devolvio un puntero al dato o NULL
+void *lista_iter_ver_actual(const lista_iter_t *iter);
+
+// Destruye el iterador de una lista
+// Pre: el iterador fue creado
 void lista_iter_destruir(lista_iter_t *iter);
 
-// AMBOS
+// Inserta en una lista en la posicion actual del iterador
+// Pre: el iterador y la lista fueron creados
+// Post: devuelve NULL si algun parametro no es correcto
 bool lista_insertar(lista_t *lista, lista_iter_t *iter, void *dato);
+
+// Elimina un elemento de la lista en la posicion actual del iterador
+// Pre: el iterador y la lista fueron creados
+// Post: devuelve un puntero al dato del nodo que fue borrado o NULL si algun parametro no es correcto
 void *lista_borrar(lista_t *lista, lista_iter_t *iter);
+
+// Itera la lista aplicandole la funcion visitar a cada dato almacenado, pasandole el parametro extra para que esta lo utilice
+// Pre: la lista fue creada
 void lista_iterar(lista_t *lista, bool (*visitar)(void *dato, void *extra), void *extra);
 
 
