@@ -324,30 +324,33 @@ hash_iter_t *hash_iter_crear(const hash_t *hash) {
     if(hash_cantidad(hash) == 0)
     {
         hash_iter->actual = NULL;
-        return hash_iter;
+        hash_iter->lista_iter = NULL;
     }
-
-    lista = hash->vector[posicion_primer_lista];
-
-    while(lista == NULL && posicion_primer_lista < hash->largo)
+    else
     {
-        posicion_primer_lista++;
         lista = hash->vector[posicion_primer_lista];
+
+        while(lista == NULL && posicion_primer_lista < hash->largo)
+        {
+            posicion_primer_lista++;
+            lista = hash->vector[posicion_primer_lista];
+        }
+
+        hash_iter->actual = lista;
+
+        // WARN: Puede ser NULL
+        hash_iter->lista_iter = lista_iter_crear(hash_iter->actual);
+
+        if(!hash_iter->lista_iter)
+        {
+            free(hash_iter);
+            return NULL;
+        }
     }
 
     hash_iter->posicion_actual = posicion_primer_lista;
     hash_iter->numero_lista_actual = 1;
-    hash_iter->actual = lista;
     hash_iter->hash = hash;
-
-    // WARN: Puede ser NULL
-    hash_iter->lista_iter = lista_iter_crear(hash_iter->actual);
-
-    if(!hash_iter->lista_iter)
-    {
-        free(hash_iter);
-        return NULL;
-    }
 
     return hash_iter;
 }
@@ -362,8 +365,8 @@ bool hash_iter_al_final(const hash_iter_t *hash_iter) {
 bool hash_iter_avanzar(hash_iter_t *hash_iter) {
     if(!hash_iter) return NULL;
 
-    // 1 - Iterador del hash al final del mismo.
-    if(hash_iter_al_final(hash_iter)) return false;
+    // 1 - Si no hay iterado de lista (porque no hay lista)
+    if(!hash_iter->lista_iter) return false;
 
     bool iter_lista_al_final = lista_iter_al_final(hash_iter->lista_iter);
 
