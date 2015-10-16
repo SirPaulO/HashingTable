@@ -22,7 +22,7 @@ typedef struct hash {
 
 /* Nodo para guardar en la Lista */
 typedef struct nodo_hash {
-    const char* clave;
+    char* clave;
     void* dato;
 } nodo_hash_t;
 
@@ -37,7 +37,7 @@ typedef struct hash_iter {
 
 /* Nodo para pasar como Extra en el iterador de la lista y comparar pertenencia o actualizar dato */
 typedef struct nodo_auxiliar {
-    const char* clave;
+    char* clave;
     void* dato;
     bool encontrado;
     bool actualizar;
@@ -56,6 +56,7 @@ void vector_limpiar(void* vector[], size_t largo) {
   Post: Devuelve un entero dentro del rango de 0 a largo-1.
 */
 size_t hashear(const char *key, size_t largo) {
+    if(strlen(key)==0) return 0;
 	size_t hashAddress = 0;
 
 	for (int counter = 0; key[counter]!='\0'; counter++)
@@ -135,15 +136,20 @@ bool hash_pertenece(const hash_t *hash, const char *clave) {
 
     auxiliar->actualizar = false;
     auxiliar->encontrado = false;
-    auxiliar->clave = clave;
+
+    char* clave_copiada = copiar_clave(clave);
+
+    auxiliar->clave = clave_copiada;
 
     // Por si acaso.
     auxiliar->destruir_dato = NULL;
     auxiliar->dato = NULL;
 
     lista_iterar(lista, comparar_claves, auxiliar);
-
-    return auxiliar->encontrado;
+    free(auxiliar->clave);
+    bool encontrado = auxiliar->encontrado;
+    free(auxiliar);
+    return encontrado;
 }
 
 /* Guarda un elemento en el hash, si la clave ya se encuentra en la
@@ -154,7 +160,7 @@ bool hash_pertenece(const hash_t *hash, const char *clave) {
  */
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
-    if(!hash || !clave || !dato)
+    if(!hash || !clave)
         return NULL;
 
     size_t clave_hasheada = hashear(clave, hash->largo);
@@ -203,8 +209,9 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
         // Si la cree, la apunto, sino apunto a lo apuntado (nada)
         hash->vector[clave_hasheada] = lista;
-
+        // (char*)( (nodo_hash_t*) lista_ver_primero( (lista_t*) hash->vector[clave_hasheada] ) )->dato
         hash->tam++;
+        return true;
     }
     else // Si la clave Pertenece, actualizar el valor usando nodo auxliar y lista iterar
     {
@@ -214,7 +221,9 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
         nodo_auxiliar_t* auxiliar = malloc(sizeof(nodo_auxiliar_t));
         if(!auxiliar) return NULL;
 
-        auxiliar->clave = clave;
+        char* clave_copiada = copiar_clave(clave);
+
+        auxiliar->clave = clave_copiada;
         auxiliar->dato = dato;
         auxiliar->actualizar = true;
         auxiliar->encontrado = false;
@@ -222,7 +231,11 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
         lista_iterar(lista, comparar_claves, auxiliar);
 
-        return auxiliar->encontrado;
+        free(auxiliar->clave);
+        bool encontrado = auxiliar->encontrado;
+        free(auxiliar);
+
+        return encontrado;
     }
 	return false;
 }
@@ -234,9 +247,29 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
  * en el caso de que estuviera guardado.
  IMPORTANTE: DSTRUIR DATO SINO ES NULL
  */
-void *hash_borrar(hash_t *hash, const char *clave) {
-    // TODO
-    return NULL;
+void* hash_borrar(hash_t *hash, const char *clave) {
+    if(!hash_pertenece(hash, clave)) return NULL;
+
+    size_t clave_hasheada = hashear(clave,hash->largo);
+
+    lista_t* lista = hash->vector[clave_hasheada];
+
+    lista_iter_t *iter = lista_iter_crear(lista);
+
+    while(!lista_iter_al_final(iter) && strcmp(clave, ((nodo_hash_t*) lista_iter_ver_actual(iter))->clave) != 0 )
+        lista_iter_avanzar(iter);
+
+    nodo_hash_t* nodo = lista_borrar(lista,iter);
+    if(!nodo) return NULL;
+
+    void* dato = nodo->dato;
+
+    free(nodo->clave);
+    free(nodo);
+
+    hash->tam--;
+
+    return dato;
 }
 
 /* Compara si la clave almacenada en el nodo_hash es igual a la que estamos buscando y guarda su dato*/
@@ -257,7 +290,7 @@ bool obtener_dato(void* nodo_hash, void* extra) {
  * devuelve NULL.
  * Pre: La estructura hash fue inicializada
  */
-void *hash_obtener(const hash_t *hash, const char *clave) {
+void* hash_obtener(const hash_t *hash, const char *clave) {
     if(!hash || !clave) return NULL;
     if(!hash_pertenece(hash, clave)) return NULL;
 
@@ -268,10 +301,14 @@ void *hash_obtener(const hash_t *hash, const char *clave) {
     nodo_hash_t* auxiliar = malloc(sizeof(nodo_hash_t));
     if(!auxiliar) return NULL;
 
-    auxiliar->clave = clave;
+    char* clave_copiada = copiar_clave(clave);
+
+    auxiliar->clave = clave_copiada;
     auxiliar->dato = NULL;
 
     lista_iterar(lista, obtener_dato, auxiliar);
+
+    free(clave_copiada);
 
     return auxiliar->dato;
 }
@@ -378,7 +415,11 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
         return lista_iter_avanzar(hash_iter->lista_iter);
     else
     {
-        lista_iter_destruir(hash_iter->lista_iter);
+        size_t rbk_pos = hash_iter->posicion_actual;
+        lista_iter_t* rbk_lista_iter = hash_iter->lista_iter;
+
+        hash_iter->lista_iter = NULL;
+
         hash_iter->actual = hash_iter->hash->vector[++hash_iter->posicion_actual];
 
         while(hash_iter->actual == NULL && hash_iter->posicion_actual < hash_iter->hash->largo)
@@ -388,6 +429,21 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
         }
 
         hash_iter->numero_lista_actual++;
+
+        hash_iter->lista_iter = lista_iter_crear(hash_iter->actual);
+
+        if(!hash_iter->lista_iter)
+        {
+            // Rollback
+            hash_iter->numero_lista_actual--;
+            hash_iter->posicion_actual = rbk_pos;
+            hash_iter->lista_iter = rbk_lista_iter;
+
+            return NULL;
+        }
+
+        // Liberar memoria
+        lista_iter_destruir(rbk_lista_iter);
 
         return true;
     }
@@ -401,6 +457,7 @@ const char *hash_iter_ver_actual(const hash_iter_t *hash_iter) {
         return NULL;
 
     const nodo_hash_t* nodo = lista_iter_ver_actual(hash_iter->lista_iter);
+    if(!nodo) return NULL;
     return nodo->clave;
 }
 
