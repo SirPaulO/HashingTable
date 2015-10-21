@@ -4,6 +4,7 @@
 #include <string.h>
 #include "lista.h"
 #define LARGO_INICIAL 30
+#define FACTOR_CARGA_MAXIMO 0.7
 
 // Los structs deben llamarse "hash" y "hash_iter".
 // HASH ABIERTO
@@ -159,6 +160,9 @@ bool hash_pertenece(const hash_t *hash, const char *clave) {
  IMPORTANTE: (a) COPIAR CLAVE (para que no te la modifique el usuario) (b) Destruir dato si hay que actualizar
  */
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
+
+    if(hash->tam/hash->largo >= FACTOR_CARGA_MAXIMO)
+        hash_redimensionar(hash, hash->largo*2);
 
     if(!hash || !clave)
         return NULL;
@@ -466,4 +470,30 @@ void hash_iter_destruir(hash_iter_t* hash_iter) {
     if(!hash_iter) return;
     lista_iter_destruir(hash_iter->lista_iter);
     free(hash_iter);
+}
+
+bool hash_redimensionar(hash_t* hash, size_t largo_nuevo) {
+    void** vector_nuevo = realloc(hash->vector, largo_nuevo * sizeof(void*));
+
+    if (largo_nuevo > 0 && datos_nuevo == NULL) {
+        return false;
+    }
+
+    vector_limpiar(vector_nuevo);
+
+    vector->largo = largo_nuevo;
+
+    hash_iter_t* iter = hash_iter_crear(hash);
+    while(!hash_iter_al_final(iter))
+    {
+        char* clave = hash_iter_ver_actual(hash_iter);
+        void* dato = hash_obtener(hash, clave);
+        hash_guardar(vector_nuevo,clave,dato);
+    }
+
+    hash_iter_destruir(iter);
+    hash_destruir(hash);
+    hash->vector = vector_nuevo;
+    
+    return true;
 }
