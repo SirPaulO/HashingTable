@@ -33,6 +33,7 @@ typedef struct hash_iter {
     lista_iter_t* lista_iter;
     size_t posicion_actual;
     size_t numero_lista_actual;
+    size_t items_recorridos;
     const hash_t* hash;
 } hash_iter_t;
 
@@ -93,7 +94,7 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato) {
 
 /* Copia la clave en memoria para evitar que el usuario la cambie */
 char* copiar_clave(const char *clave) {
-    char* clave_copiada = malloc(sizeof(clave));
+    char* clave_copiada = malloc(sizeof(clave)+1);
     strcpy(clave_copiada, clave);
     return clave_copiada;
 }
@@ -163,8 +164,9 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
     if(!hash || !clave) return NULL;
 
+    // TODO: Chequear la conversion de tipos
     if( (double)hash->tam / (double)hash->largo >= FACTOR_CARGA_MAXIMO)
-        if( !hash_redimensionar(hash, hash->largo*2) )
+        if( !hash_redimensionar(hash, (hash->largo*2) ) )
             return false;
 
     size_t clave_hasheada = hashear(clave, hash->largo);
@@ -214,7 +216,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
         // Si la cree, la apunto, sino apunto a lo apuntado (nada)
         hash->vector[clave_hasheada] = lista;
         // (char*)( (nodo_hash_t*) lista_ver_primero( (lista_t*) hash->vector[clave_hasheada] ) )->dato
-        hash->tam++;
+        hash->tam = hash->tam + 1;
         return true;
     }
     else // Si la clave Pertenece, actualizar el valor usando nodo auxliar y lista iterar
@@ -322,7 +324,11 @@ void* hash_obtener(const hash_t *hash, const char *clave) {
 
     free(clave_copiada);
 
-    return auxiliar->dato;
+    void* dato = auxiliar->dato;
+
+    free(auxiliar);
+
+    return dato;
 }
 
 /* Devuelve la cantidad de elementos del hash.
@@ -400,6 +406,7 @@ hash_iter_t *hash_iter_crear(const hash_t *hash) {
     hash_iter->posicion_actual = posicion_primer_lista;
     hash_iter->numero_lista_actual = 1;
     hash_iter->hash = hash;
+    hash_iter->items_recorridos = 1;
 
     return hash_iter;
 }
@@ -407,7 +414,8 @@ hash_iter_t *hash_iter_crear(const hash_t *hash) {
 // Comprueba si terminó la iteración
 bool hash_iter_al_final(const hash_iter_t *hash_iter) {
     if(!hash_iter) return NULL;
-    return hash_iter->numero_lista_actual >= hash_iter->hash->tam;
+    //return hash_iter->numero_lista_actual >= hash_iter->hash->tam;
+    return hash_iter->items_recorridos > hash_iter->hash->tam;
 }
 
 // Avanza iterador (no me digas..)
@@ -424,7 +432,13 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
         return false;
 
     if(!iter_lista_al_final)
-        return lista_iter_avanzar(hash_iter->lista_iter);
+    {
+
+        if( !lista_iter_avanzar(hash_iter->lista_iter) )
+            return false;
+        hash_iter->items_recorridos = hash_iter->items_recorridos + 1;
+        return true;
+    }
     else
     {
         size_t rbk_pos = hash_iter->posicion_actual;
@@ -436,11 +450,11 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
 
         while(hash_iter->actual == NULL && hash_iter->posicion_actual < hash_iter->hash->largo)
         {
-            hash_iter->posicion_actual++;
+            hash_iter->posicion_actual = hash_iter->posicion_actual + 1;
             hash_iter->actual = hash_iter->hash->vector[hash_iter->posicion_actual];
         }
 
-        hash_iter->numero_lista_actual++;
+        hash_iter->numero_lista_actual = hash_iter->numero_lista_actual + 1;
 
         hash_iter->lista_iter = lista_iter_crear(hash_iter->actual);
 
@@ -456,6 +470,7 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
 
         // Liberar memoria
         lista_iter_destruir(rbk_lista_iter);
+        hash_iter->items_recorridos = hash_iter->items_recorridos + 1;
 
         return true;
     }
@@ -469,7 +484,8 @@ const char *hash_iter_ver_actual(const hash_iter_t *hash_iter) {
         return NULL;
 
     const nodo_hash_t* nodo = lista_iter_ver_actual(hash_iter->lista_iter);
-    if(!nodo) return NULL;
+    if(nodo == NULL)
+        return NULL;
     return nodo->clave;
 }
 
@@ -481,7 +497,8 @@ void hash_iter_destruir(hash_iter_t* hash_iter) {
 }
 
 bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
-    void** nuevo_vector = malloc(nuevo_largo * sizeof(void*));
+    return true;
+    void** nuevo_vector = malloc(sizeof(void*) * nuevo_largo);
 
     if (nuevo_largo > 0 && nuevo_vector == NULL)
         return false;

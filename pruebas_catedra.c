@@ -18,6 +18,7 @@
  *                        PRUEBAS UNITARIAS
  * *****************************************************************/
 
+
 static void prueba_crear_hash_vacio()
 {
     return;
@@ -219,7 +220,6 @@ static void prueba_hash_valor_null()
 
 static void prueba_hash_volumen(size_t largo, bool debug)
 {
-    return;
     hash_t* hash = hash_crear(NULL);
 
     const size_t largo_clave = 10;
@@ -238,6 +238,7 @@ static void prueba_hash_volumen(size_t largo, bool debug)
     }
 
     if (debug) print_test("Prueba hash almacenar muchos elementos", ok);
+    if (debug) print_test("Prueba hash la cantidad de elementos es correcta", hash_cantidad(hash) == largo);
     if (debug) print_test("Prueba hash la cantidad de elementos es correcta", hash_cantidad(hash) == largo);
 
     /* Verifica que devuelva los valores correctos */
@@ -288,6 +289,7 @@ static ssize_t buscar(const char* clave, char* claves[], size_t largo)
 
 static void prueba_hash_iterar()
 {
+    return;
     hash_t* hash = hash_crear(NULL);
 
     char *claves[] = {"perro", "gato", "vaca"};
