@@ -45,6 +45,9 @@ typedef struct nodo_auxiliar {
     hash_destruir_dato_t destruir_dato;
 } nodo_auxiliar_t;
 
+/********************************************/
+bool hash_redimensionar(hash_t* hash, size_t largo_nuevo);
+
 /* Inicializar todas las posiciones en NULL */
 void vector_limpiar(void* vector[], size_t largo) {
     for(int i=0;i<largo;i++)
@@ -161,11 +164,11 @@ bool hash_pertenece(const hash_t *hash, const char *clave) {
  */
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
-    if(hash->tam/hash->largo >= FACTOR_CARGA_MAXIMO)
-        hash_redimensionar(hash, hash->largo*2);
+    if(!hash || !clave) return NULL;
 
-    if(!hash || !clave)
-        return NULL;
+    if( (double)hash->tam / (double)hash->largo >= FACTOR_CARGA_MAXIMO)
+        if( !hash_redimensionar(hash, hash->largo*2) )
+            return false;
 
     size_t clave_hasheada = hashear(clave, hash->largo);
 
@@ -272,6 +275,7 @@ void* hash_borrar(hash_t *hash, const char *clave) {
     free(nodo);
 
     hash->tam--;
+    // TODO: IMPORTANT! Eliminar lista y apuntar a NULL si esta vacia
 
     return dato;
 }
@@ -475,25 +479,18 @@ void hash_iter_destruir(hash_iter_t* hash_iter) {
 bool hash_redimensionar(hash_t* hash, size_t largo_nuevo) {
     void** vector_nuevo = realloc(hash->vector, largo_nuevo * sizeof(void*));
 
-    if (largo_nuevo > 0 && datos_nuevo == NULL) {
+    if (largo_nuevo > 0 && vector_nuevo == NULL)
         return false;
-    }
 
-    vector_limpiar(vector_nuevo);
+    vector_limpiar(vector_nuevo, largo_nuevo);
+    // TODO: Redimensionar de verdad
 
-    vector->largo = largo_nuevo;
+    // Idea de como redimensionar un Hash
+    // Recorrer el VECTOR ACTUAL del HASH (con for)
+    // Si la POSICION es != NLL pedir CLAVE del PRIMER dato de la LISTA (Del primer, segundo, o ultimo; total la funcion hashear aplicado a cualquiera deberia ser el mismo resultado)
+    // Hashear esa CLAVE para ver la nueva POSICION dentro del VECTOR NUEVO
+    // Colorcar el puntero a esa LISTA en la POSICION correspondiente en VECTOR NUEVO
+    // Repetir VECTOR ACTUAL LARGO veces
 
-    hash_iter_t* iter = hash_iter_crear(hash);
-    while(!hash_iter_al_final(iter))
-    {
-        char* clave = hash_iter_ver_actual(hash_iter);
-        void* dato = hash_obtener(hash, clave);
-        hash_guardar(vector_nuevo,clave,dato);
-    }
-
-    hash_iter_destruir(iter);
-    hash_destruir(hash);
-    hash->vector = vector_nuevo;
-    
     return true;
 }
