@@ -455,8 +455,8 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
         {
             hash_iter->posicion_actual++;
             lista = hash_iter->hash->vector[hash_iter->posicion_actual];
-            printf("%d/%d/ %d/%d\n", 
-            hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
+            //printf("%d/%d/ %d/%d\n", 
+            //hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
         }
 
         if(!lista) 
@@ -500,80 +500,39 @@ void hash_iter_destruir(hash_iter_t* hash_iter) {
 }
 
 bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
-return true;
 
-    TODO TODO TODO TODO ME QUEME!
-    SOLO QUEDA ESTO PARA QUE CORRA RAPIDO;
-    PASA TODAS LAS PRUEBAS 0 MEMORIA PERDIDA
+    void** nuevo_vector = malloc(sizeof(void*) * nuevo_largo);
 
-    YO DIRIA DE CREAR NUEVO HASH; SINO NO SE ME OCURRE
-    AL MENOS AHORA... COMO DIJE ESTOY QUEMADO!
-    ;) GLHF
-   {} // void** nuevo_vector = malloc(sizeof(void*) * nuevo_largo);
+    if (nuevo_largo > 0 && !nuevo_vector)
+        return false;
 
-    // if (nuevo_largo > 0 && !nuevo_vector)
-    //     return false;
+    vector_limpiar(nuevo_vector, nuevo_largo);
 
-    // vector_limpiar(nuevo_vector, nuevo_largo);
+    lista_t* lista = lista_crear();
 
-    // lista_t* lista = lista_crear();
-    // hash_iter_t* iter = hash_iter_crear(hash);
+    for(int i = 0; i<hash->largo; i++){
+        if(hash->vector[i] != NULL){
+            lista_insertar_ultimo(lista,hash->vector[i]);
+        }
+    }
 
-    // while
-   {}
-    // TODO: Redimensionar de verdad
+    vector_limpiar(hash->vector, hash->largo);
+    free(hash->vector);
 
-    // Idea (1) de como redimensionar un Hash
-    // Recorrer el VECTOR ACTUAL del HASH (con for)
-    // Si la POSICION es != NLL pedir CLAVE del PRIMER dato de la LISTA (Del primer, segundo, o ultimo; total la funcion hashear aplicado a cualquiera deberia ser el mismo resultado)
-    // Hashear esa CLAVE para ver la nueva POSICION dentro del VECTOR NUEVO
-    // Colorcar el puntero a esa LISTA en la POSICION correspondiente en VECTOR NUEVO
-    // Repetir VECTOR ACTUAL LARGO veces
-    // Apuntar el VECTOR ACTUAL del HASH al VECTOR NUEVO
+    hash->vector = nuevo_vector;
+    hash->largo = nuevo_largo;
 
-    // Ida (2) de como redimensionar un Hash
-    // ...
 
-    // void** actual_vector = hash->vector;
-    // size_t actual_largo = hash->largo;
-    // size_t actual_tam = hash->tam;
-    // size_t nuevo_tam = 0;
+    while(!lista_esta_vacia(lista))
+    {
+        lista_t* lista_hash = lista_borrar_primero(lista);
+        nodo_hash_t* nodo = lista_ver_primero(lista_hash);
+        char* clave = nodo->clave;
+        size_t clave_hasheada = hashear(clave, hash->largo);
+        hash->vector[clave_hasheada]  = lista_hash;
+    }
 
-    // hash_iter_t* iter = hash_iter_crear(hash);
-    // while(!hash_iter_al_final(iter))
-    // {
-    //     const char* clave = hash_iter_ver_actual(iter);
-    //     // IMPORTANT!: usar HASH_OBTENER. HASH_BORRAR hace imposible el rollback en caso de error.
-    //     void* dato = hash_obtener(hash, clave);
-
-    //     // Cambiar el vector en el que se guarda (;
-    //     hash->vector = nuevo_vector;
-    //     hash->largo = nuevo_largo;
-    //     hash->tam = nuevo_tam;
-
-    //     bool guardado = hash_guardar(hash, clave, &dato);
-
-    //     // Dejar el vector original
-    //     hash->vector = actual_vector;
-    //     hash->largo = actual_largo;
-    //     hash->tam = actual_tam;
-
-    //     if( !guardado )
-    //     {
-    //         free(nuevo_vector);
-    //         hash_iter_destruir(iter);
-    //         return false;
-
-    //     }
-
-    //     hash_iter_avanzar(iter);
-    // }
-    // hash_iter_destruir(iter);
-    // free(actual_vector);
-
-    // hash->vector = nuevo_vector;
-    // hash->largo = nuevo_largo;
-    // hash->tam = nuevo_tam;
-
+    free(lista);
+   
     return true;
 }
