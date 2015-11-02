@@ -1,12 +1,15 @@
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+
 #include "lista.h"
-#define LARGO_INICIAL 30
-#define FACTOR_CARGA_MAXIMO 0.7
+#include "lookup3.c"
+
+#define EXPONENTE_INICIAL 8
+#define FACTOR_CARGA_MAXIMO 2.5
 
 // Los structs deben llamarse "hash" y "hash_iter".
 // HASH ABIERTO
@@ -18,9 +21,10 @@ typedef void (*hash_destruir_dato_t)(void *);
 
 typedef struct hash {
     size_t tam; /* Cantidad de elementos en el vector*/
-    size_t largo; /* Cantidad memoria del vector*/
+    size_t largo; /* Cantidad memoria del vector MANTENER EN POTENCIAS DE 2 */
     hash_destruir_dato_t destruir_dato; /* Funcion para destruir los datos */
     void** vector; /* Arreglo (HashTable) para guardar las listas */
+    size_t exponente;
 } hash_t ;
 
 /* Nodo para guardar en la Lista */
@@ -64,13 +68,13 @@ void vector_limpiar(void* vector[], size_t largo) {
 */
 size_t hashear(const char *key, size_t largo) {
     if(strlen(key)==0) return 0;
-	size_t hashAddress = 0;
 
-	for (int counter = 0; key[counter]!='\0'; counter++)
-        hashAddress = (size_t) counter + (hashAddress << 6) + (hashAddress << 16) - hashAddress;
+	unsigned int initval;
+    unsigned int hashAddress;
 
-	hashAddress = hashAddress%largo;
-	return hashAddress;
+    initval = 5381;
+    hashAddress = lookup3(key, strlen(key), initval);
+    return (hashAddress & (largo-1));
 }
 
 /* Crea el Hash */
@@ -79,9 +83,10 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato) {
     if(!hash) return NULL;
 
     hash->destruir_dato = destruir_dato;
+    hash->exponente = EXPONENTE_INICIAL;
     hash->tam = 0;
-    hash->largo = LARGO_INICIAL;
-    hash->vector = malloc(sizeof(void*) * LARGO_INICIAL);
+    hash->largo = (size_t) pow(2, hash->exponente); // Mantener siempre en Potencias de 2
+    hash->vector = malloc(sizeof(void*) * hash->largo);
 
     if(!hash->vector)
     {
@@ -89,7 +94,7 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato) {
     	return NULL;
     }
 
-    vector_limpiar(hash->vector, LARGO_INICIAL);
+    vector_limpiar(hash->vector, hash->largo);
 
     return hash;
 }
@@ -168,7 +173,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
     // TODO: Chequear la conversion de tipos
     if( (double)hash->tam / (double)hash->largo >= FACTOR_CARGA_MAXIMO)
-        if( !hash_redimensionar(hash, (hash->largo*2) ) )
+        if( !hash_redimensionar(hash, (size_t) pow(2, ++hash->exponente) ) )
             return false;
 
     size_t clave_hasheada = hashear(clave, hash->largo);
