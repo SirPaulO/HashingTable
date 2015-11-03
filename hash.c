@@ -4,18 +4,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-<<<<<<< HEAD
-#include "lista.h"
-#define EXPONENTE_INICIAL 8
-#define FACTOR_CARGA_MAXIMO 0.7
-=======
 
 #include "lista.h"
 #include "lookup3.c"
 
 #define EXPONENTE_INICIAL 8
 #define FACTOR_CARGA_MAXIMO 2.5
->>>>>>> 474cdb494785716ab7a5f1a0d5dd8c788f1111c3
 
 // Los structs deben llamarse "hash" y "hash_iter".
 // HASH ABIERTO
@@ -30,11 +24,7 @@ typedef struct hash {
     size_t largo; /* Cantidad memoria del vector MANTENER EN POTENCIAS DE 2 */
     hash_destruir_dato_t destruir_dato; /* Funcion para destruir los datos */
     void** vector; /* Arreglo (HashTable) para guardar las listas */
-<<<<<<< HEAD
-    size_t exponenete;
-=======
     size_t exponente;
->>>>>>> 474cdb494785716ab7a5f1a0d5dd8c788f1111c3
 } hash_t ;
 
 /* Nodo para guardar en la Lista */
@@ -79,14 +69,8 @@ void vector_limpiar(void* vector[], size_t largo) {
 size_t hashear(const char *key, size_t largo) {
     if(strlen(key)==0) return 0;
 
-<<<<<<< HEAD
-	for (int counter = 0; key[counter]!='\0'; counter++)
-        hashAddress = (size_t) key[counter] + (size_t) counter + (hashAddress << 6) + (hashAddress << 16) - hashAddress;
-=======
 	unsigned int initval;
     unsigned int hashAddress;
->>>>>>> 474cdb494785716ab7a5f1a0d5dd8c788f1111c3
-
     initval = 5381;
     hashAddress = lookup3(key, strlen(key), initval);
     return (hashAddress & (largo-1));
@@ -106,12 +90,7 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato) {
     hash->destruir_dato = destruir_dato;
     hash->exponente = EXPONENTE_INICIAL;
     hash->tam = 0;
-<<<<<<< HEAD
-    hash->exponenete = EXPONENTE_INICIAL;
-    hash->largo = elevar(hash->exponenete);
-=======
-    hash->largo = (size_t) pow(2, hash->exponente); // Mantener siempre en Potencias de 2
->>>>>>> 474cdb494785716ab7a5f1a0d5dd8c788f1111c3
+    hash->largo = elevar(hash->exponente); // Mantener siempre en Potencias de 2
     hash->vector = malloc(sizeof(void*) * hash->largo);
 
     if(!hash->vector)
@@ -199,12 +178,8 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
     // TODO: Chequear la conversion de tipos
     if( (double)hash->tam / (double)hash->largo >= FACTOR_CARGA_MAXIMO)
-<<<<<<< HEAD
     {
-        if( !hash_redimensionar(hash, elevar(++hash->exponenete)) )
-=======
-        if( !hash_redimensionar(hash, (size_t) pow(2, ++hash->exponente) ) )
->>>>>>> 474cdb494785716ab7a5f1a0d5dd8c788f1111c3
+        if( !hash_redimensionar(hash, elevar(++hash->exponente)) )
             return false;
     }
 
@@ -492,11 +467,8 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
         {
             hash_iter->posicion_actual++;
             lista = hash_iter->hash->vector[hash_iter->posicion_actual];
-<<<<<<< HEAD
-=======
-            //printf("%d/%d/ %d/%d\n", 
+            //printf("%d/%d/ %d/%d\n",
             //hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
->>>>>>> 474cdb494785716ab7a5f1a0d5dd8c788f1111c3
         }
 
         if(!lista)
@@ -540,7 +512,6 @@ void hash_iter_destruir(hash_iter_t* hash_iter) {
 }
 
 bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
-<<<<<<< HEAD
     return true;
     void** nuevo_vector = malloc(sizeof(void*) * nuevo_largo);
 
@@ -562,7 +533,33 @@ bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
     // Ida (2) de como redimensionar un Hash
     // ...
 
-    for(size_t index = 0; index < hash->largo; index++)
+    lista_t* lista = lista_crear();
+
+    for(int i = 0; i<hash->largo; i++){
+        if(hash->vector[i] != NULL){
+            lista_insertar_ultimo(lista,hash->vector[i]);
+        }
+    }
+
+    vector_limpiar(hash->vector, hash->largo);
+    free(hash->vector);
+
+    hash->vector = nuevo_vector;
+    hash->largo = nuevo_largo;
+
+
+    while(!lista_esta_vacia(lista))
+    {
+        lista_t* lista_hash = lista_borrar_primero(lista);
+        nodo_hash_t* nodo = lista_ver_primero(lista_hash);
+        char* clave = nodo->clave;
+        size_t clave_hasheada = hashear(clave, hash->largo);
+        hash->vector[clave_hasheada]  = lista_hash;
+    }
+
+    free(lista);
+    return true;
+    /*for(size_t index = 0; index < hash->largo; index++)
     {
         if(!hash->vector[index]) continue;
 
@@ -593,42 +590,5 @@ bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
 
     free(hash->vector);
     hash->vector = nuevo_vector;
-    hash->largo = nuevo_largo;
-=======
-
-    void** nuevo_vector = malloc(sizeof(void*) * nuevo_largo);
-
-    if (nuevo_largo > 0 && !nuevo_vector)
-        return false;
-
-    vector_limpiar(nuevo_vector, nuevo_largo);
-
-    lista_t* lista = lista_crear();
-
-    for(int i = 0; i<hash->largo; i++){
-        if(hash->vector[i] != NULL){
-            lista_insertar_ultimo(lista,hash->vector[i]);
-        }
-    }
-
-    vector_limpiar(hash->vector, hash->largo);
-    free(hash->vector);
-
-    hash->vector = nuevo_vector;
-    hash->largo = nuevo_largo;
-
-
-    while(!lista_esta_vacia(lista))
-    {
-        lista_t* lista_hash = lista_borrar_primero(lista);
-        nodo_hash_t* nodo = lista_ver_primero(lista_hash);
-        char* clave = nodo->clave;
-        size_t clave_hasheada = hashear(clave, hash->largo);
-        hash->vector[clave_hasheada]  = lista_hash;
-    }
-
-    free(lista);
-   
->>>>>>> 474cdb494785716ab7a5f1a0d5dd8c788f1111c3
-    return true;
+    hash->largo = nuevo_largo;*/
 }
