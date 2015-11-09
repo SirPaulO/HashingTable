@@ -176,7 +176,6 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
     if(!hash || !clave) return NULL;
 
-    // TODO: Chequear la conversion de tipos
     if( (double)hash->tam / (double)hash->largo >= FACTOR_CARGA_MAXIMO)
     {
         if( !hash_redimensionar(hash, elevar(++hash->exponente)) )
@@ -517,15 +516,12 @@ void hash_iter_destruir(hash_iter_t* hash_iter) {
 }
 
 bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
-    return true;
     void** nuevo_vector = malloc(sizeof(void*) * nuevo_largo);
 
     if (nuevo_largo > 0 && !nuevo_vector)
         return false;
 
     vector_limpiar(nuevo_vector, nuevo_largo);
-
-    // TODO: Redimensionar de verdad
 
     // Idea (1) de como redimensionar un Hash
     // Recorrer el VECTOR ACTUAL del HASH
@@ -534,9 +530,6 @@ bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
     // Colorcar el puntero a esa LISTA en la POSICION correspondiente en VECTOR NUEVO
     // Repetir VECTOR ACTUAL LARGO veces
     // Apuntar el VECTOR ACTUAL del HASH al VECTOR NUEVO
-
-    // Ida (2) de como redimensionar un Hash
-    // ...
 
     lista_t* lista = lista_crear();
 
@@ -569,36 +562,4 @@ bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
 
     free(lista);
     return true;
-    /*for(size_t index = 0; index < hash->largo; index++)
-    {
-        if(!hash->vector[index]) continue;
-
-        lista_iter_t* iter = lista_iter_crear(hash->vector[index]);
-
-        while(!lista_iter_al_final(iter))
-        {
-            nodo_hash_t* nodo = lista_borrar(hash->vector[index], iter);
-            char* clave = nodo->clave;
-            size_t hasheado = hashear(clave, nuevo_largo);
-
-            if(!nuevo_vector[hasheado])
-            {
-                lista_t* lista = malloc(sizeof(lista_t*));
-                lista_insertar_ultimo(lista, nodo);
-                nuevo_vector[hasheado] = lista;
-            }
-            else
-            {
-                lista_insertar_ultimo(nuevo_vector[hasheado], nodo);
-            }
-            lista_iter_avanzar(iter);
-        }
-        lista_iter_destruir(iter);
-
-        //nuevo_vector[hashear(((nodo_hash_t*)lista_ver_primero((lista_t*)hash->vector[index]))->clave, nuevo_largo)] = hash->vector[index];
-    }
-
-    free(hash->vector);
-    hash->vector = nuevo_vector;
-    hash->largo = nuevo_largo;*/
 }
