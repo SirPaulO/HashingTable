@@ -6,7 +6,7 @@
 #include <math.h>
 
 #include "lista.h"
-#include "lookup3.c"
+#include "lookup.h"
 
 #define EXPONENTE_INICIAL 8
 #define FACTOR_CARGA_MAXIMO 2.5
@@ -172,9 +172,10 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
     if(!hash || !clave) return NULL;
 
     // TODO: Chequear la conversion de tipos
-    if( (double)hash->tam / (double)hash->largo >= FACTOR_CARGA_MAXIMO)
-        if( !hash_redimensionar(hash, (size_t) pow(2, ++hash->exponente) ) )
-            return false;
+    if( hash->tam / hash->largo >= FACTOR_CARGA_MAXIMO){
+        if( !hash_redimensionar(hash, (size_t) pow(2, ++hash->exponente) ) ){
+            
+            return false;}}
 
     size_t clave_hasheada = hashear(clave, hash->largo);
 
@@ -454,14 +455,18 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
     }
     else
     {   
+        if(hash_iter->posicion_actual == hash_iter->hash->largo-1){
+            hash_iter->items_recorridos++;
+            return false;
+        }
         lista_t* lista = hash_iter->hash->vector[++hash_iter->posicion_actual];
 
         while(lista == NULL && hash_iter->posicion_actual < hash_iter->hash->largo-1)
         {
             hash_iter->posicion_actual++;
             lista = hash_iter->hash->vector[hash_iter->posicion_actual];
-            //printf("%d/%d/ %d/%d\n", 
-            //hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
+            // printf("%d/%d/ %d/%d\n", 
+            // hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
         }
 
         if(!lista) 
@@ -521,20 +526,25 @@ bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
         }
     }
 
-    vector_limpiar(hash->vector, hash->largo);
     free(hash->vector);
 
     hash->vector = nuevo_vector;
     hash->largo = nuevo_largo;
+    hash->tam = 0;
 
 
     while(!lista_esta_vacia(lista))
     {
         lista_t* lista_hash = lista_borrar_primero(lista);
-        nodo_hash_t* nodo = lista_ver_primero(lista_hash);
-        char* clave = nodo->clave;
-        size_t clave_hasheada = hashear(clave, hash->largo);
-        hash->vector[clave_hasheada]  = lista_hash;
+        while(!lista_esta_vacia(lista_hash))
+        {
+            nodo_hash_t* nodo = lista_borrar_primero(lista_hash);
+            hash_guardar(hash,nodo->clave,nodo->dato);
+            free(nodo->clave);
+            free(nodo);
+            
+        }
+        free(lista_hash);
     }
 
     free(lista);

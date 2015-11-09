@@ -329,7 +329,6 @@ static void prueba_hash_iterar()
     indice = buscar(clave, claves, sizeof(claves) / sizeof(char *));
     print_test("Prueba hash iterador ver actual, es una clave valida", indice != -1);
     print_test("Prueba hash iterador ver actual, no es el mismo puntero", clave != claves[indice]);
-    printf("hasta aca todo ok \n\n");
     /* Se anula esta prueba por diferencias de criterios */
     hash_iter_avanzar(iter);
     print_test("Prueba hash iterador esta al final, es true", hash_iter_al_final(iter));
@@ -358,6 +357,7 @@ static void prueba_hash_iterar_volumen(size_t largo)
         sprintf(claves[i], "%08d", i);
         valores[i] = i;
         ok = hash_guardar(hash, claves[i], &valores[i]);
+
         if (!ok) break;
     }
 

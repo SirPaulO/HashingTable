@@ -24,11 +24,7 @@
   c ^= b; c -= rot(b,24); \
 }
 
-uint32_t lookup3 (
-  const void *key,
-  size_t      length,
-  uint32_t    initval
-) {
+uint32_t lookup3 (const void *key, size_t length, uint32_t initval ) {
   uint32_t  a,b,c;
   const uint8_t  *k;
   const uint32_t *data32Bit;
