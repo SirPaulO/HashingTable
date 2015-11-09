@@ -20,7 +20,7 @@
 
 
 static void prueba_crear_hash_vacio()
-{   
+{
     hash_t* hash = hash_crear(NULL);
 
     print_test("Prueba hash crear hash vacio", hash);
@@ -33,7 +33,7 @@ static void prueba_crear_hash_vacio()
 }
 
 static void prueba_iterar_hash_vacio()
-{   
+{
     hash_t* hash = hash_crear(NULL);
     hash_iter_t* iter = hash_iter_crear(hash);
     print_test("Prueba hash iter crear iterador hash vacio", iter);
@@ -46,8 +46,7 @@ static void prueba_iterar_hash_vacio()
 }
 
 static void prueba_hash_insertar()
-{   
-    
+{
     hash_t* hash = hash_crear(NULL);
 
     char *clave1 = "perro", *valor1 = "guau";
@@ -80,8 +79,7 @@ static void prueba_hash_insertar()
 }
 
 static void prueba_hash_reemplazar()
-{   
-    
+{
     hash_t* hash = hash_crear(NULL);
 
     char *clave1 = "perro", *valor1a = "guau", *valor1b = "warf";
@@ -108,8 +106,8 @@ static void prueba_hash_reemplazar()
 }
 
 static void prueba_hash_reemplazar_con_destruir()
-{   
-    
+{
+
     hash_t* hash = hash_crear(free);
 
     char *clave1 = "perro", *valor1a, *valor1b;
@@ -143,8 +141,8 @@ static void prueba_hash_reemplazar_con_destruir()
 }
 
 static void prueba_hash_borrar()
-{   
-    
+{
+
     hash_t* hash = hash_crear(NULL);
 
     char *clave1 = "perro", *valor1 = "guau";
@@ -183,7 +181,7 @@ static void prueba_hash_borrar()
 
 static void prueba_hash_clave_vacia()
 {
-    
+
     hash_t* hash = hash_crear(NULL);
 
     char *clave = "", *valor = "";
@@ -200,7 +198,7 @@ static void prueba_hash_clave_vacia()
 
 static void prueba_hash_valor_null()
 {
-    
+
     hash_t* hash = hash_crear(NULL);
 
     char *clave = "", *valor = NULL;
@@ -287,7 +285,6 @@ static ssize_t buscar(const char* clave, char* claves[], size_t largo)
 
 static void prueba_hash_iterar()
 {
-    
     hash_t* hash = hash_crear(NULL);
 
     char *claves[] = {"perro", "gato", "vaca"};
@@ -304,7 +301,7 @@ static void prueba_hash_iterar()
     ssize_t indice;
 
     print_test("Prueba hash iterador esta al final, es false", !hash_iter_al_final(iter));
-    
+
 
     /* Primer valor */
     clave = hash_iter_ver_actual(iter);
@@ -314,7 +311,7 @@ static void prueba_hash_iterar()
     print_test("Prueba hash iterador avanzar es true", hash_iter_avanzar(iter));
     clave = hash_iter_ver_actual(iter);
     print_test("Prueba hash iterador esta al final, es false", !hash_iter_al_final(iter));
-    
+
 
     /* Segundo valor */
     clave = hash_iter_ver_actual(iter);
@@ -343,7 +340,7 @@ static void prueba_hash_iterar()
 }
 
 static void prueba_hash_iterar_volumen(size_t largo)
-{   
+{
     hash_t* hash = hash_crear(NULL);
 
     const size_t largo_clave = 10;

@@ -71,10 +71,15 @@ size_t hashear(const char *key, size_t largo) {
 
 	unsigned int initval;
     unsigned int hashAddress;
-
     initval = 5381;
     hashAddress = lookup3(key, strlen(key), initval);
     return (hashAddress & (largo-1));
+}
+
+size_t elevar(size_t exp) {
+    double r = pow(2, (double) exp);
+    return (size_t) r;
+
 }
 
 /* Crea el Hash */
@@ -85,7 +90,7 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato) {
     hash->destruir_dato = destruir_dato;
     hash->exponente = EXPONENTE_INICIAL;
     hash->tam = 0;
-    hash->largo = (size_t) pow(2, hash->exponente); // Mantener siempre en Potencias de 2
+    hash->largo = elevar(hash->exponente); // Mantener siempre en Potencias de 2
     hash->vector = malloc(sizeof(void*) * hash->largo);
 
     if(!hash->vector)
@@ -172,10 +177,18 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
     if(!hash || !clave) return NULL;
 
     // TODO: Chequear la conversion de tipos
+<<<<<<< HEAD
     if( hash->tam / hash->largo >= FACTOR_CARGA_MAXIMO){
         if( !hash_redimensionar(hash, (size_t) pow(2, ++hash->exponente) ) ){
             
             return false;}}
+=======
+    if( (double)hash->tam / (double)hash->largo >= FACTOR_CARGA_MAXIMO)
+    {
+        if( !hash_redimensionar(hash, elevar(++hash->exponente)) )
+            return false;
+    }
+>>>>>>> origin/master
 
     size_t clave_hasheada = hashear(clave, hash->largo);
 
@@ -435,11 +448,9 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
 
     if(hash_iter_al_final(hash_iter)) return false;
 
-
     // 1 - Si no hay iterado de lista (porque no hay lista)
     if(!hash_iter->lista_iter) return false;
 
-    
     bool iter_lista_al_final = lista_iter_al_final(hash_iter->lista_iter);
 
     // 2 - Iterador del hash y de la lista al final.
@@ -447,29 +458,41 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
         return false;
 
     bool avanzar = lista_iter_avanzar(hash_iter->lista_iter);
+    if(hash_iter->items_recorridos == hash_iter->hash->tam-1)
+        printf("AnteUltimo");
 
     if(avanzar && !lista_iter_al_final(hash_iter->lista_iter))
     {
-        hash_iter->items_recorridos ++;
+        hash_iter->items_recorridos++;
         return true;
     }
     else
+<<<<<<< HEAD
     {   
         if(hash_iter->posicion_actual == hash_iter->hash->largo-1){
             hash_iter->items_recorridos++;
             return false;
         }
         lista_t* lista = hash_iter->hash->vector[++hash_iter->posicion_actual];
+=======
+    {
+        lista_t* lista = hash_iter->hash->vector[hash_iter->posicion_actual++];
+>>>>>>> origin/master
 
         while(lista == NULL && hash_iter->posicion_actual < hash_iter->hash->largo-1)
         {
             hash_iter->posicion_actual++;
             lista = hash_iter->hash->vector[hash_iter->posicion_actual];
+<<<<<<< HEAD
             // printf("%d/%d/ %d/%d\n", 
             // hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
+=======
+            //printf("%d/%d/ %d/%d\n",
+            //hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
+>>>>>>> origin/master
         }
 
-        if(!lista) 
+        if(!lista)
         {
             hash_iter->items_recorridos++;
             return false;
@@ -510,13 +533,26 @@ void hash_iter_destruir(hash_iter_t* hash_iter) {
 }
 
 bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
-
+    return true;
     void** nuevo_vector = malloc(sizeof(void*) * nuevo_largo);
 
     if (nuevo_largo > 0 && !nuevo_vector)
         return false;
 
     vector_limpiar(nuevo_vector, nuevo_largo);
+
+    // TODO: Redimensionar de verdad
+
+    // Idea (1) de como redimensionar un Hash
+    // Recorrer el VECTOR ACTUAL del HASH
+    // Si la POSICION es != NLL pedir CLAVE del PRIMER dato de la LISTA (Del primer, segundo, o ultimo; total la funcion hashear aplicado a cualquiera deberia ser el mismo resultado)
+    // Hashear esa CLAVE para ver la nueva POSICION dentro del VECTOR NUEVO
+    // Colorcar el puntero a esa LISTA en la POSICION correspondiente en VECTOR NUEVO
+    // Repetir VECTOR ACTUAL LARGO veces
+    // Apuntar el VECTOR ACTUAL del HASH al VECTOR NUEVO
+
+    // Ida (2) de como redimensionar un Hash
+    // ...
 
     lista_t* lista = lista_crear();
 
@@ -548,6 +584,37 @@ bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
     }
 
     free(lista);
-   
     return true;
+    /*for(size_t index = 0; index < hash->largo; index++)
+    {
+        if(!hash->vector[index]) continue;
+
+        lista_iter_t* iter = lista_iter_crear(hash->vector[index]);
+
+        while(!lista_iter_al_final(iter))
+        {
+            nodo_hash_t* nodo = lista_borrar(hash->vector[index], iter);
+            char* clave = nodo->clave;
+            size_t hasheado = hashear(clave, nuevo_largo);
+
+            if(!nuevo_vector[hasheado])
+            {
+                lista_t* lista = malloc(sizeof(lista_t*));
+                lista_insertar_ultimo(lista, nodo);
+                nuevo_vector[hasheado] = lista;
+            }
+            else
+            {
+                lista_insertar_ultimo(nuevo_vector[hasheado], nodo);
+            }
+            lista_iter_avanzar(iter);
+        }
+        lista_iter_destruir(iter);
+
+        //nuevo_vector[hashear(((nodo_hash_t*)lista_ver_primero((lista_t*)hash->vector[index]))->clave, nuevo_largo)] = hash->vector[index];
+    }
+
+    free(hash->vector);
+    hash->vector = nuevo_vector;
+    hash->largo = nuevo_largo;*/
 }
