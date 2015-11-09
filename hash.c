@@ -177,18 +177,11 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
     if(!hash || !clave) return NULL;
 
     // TODO: Chequear la conversion de tipos
-<<<<<<< HEAD
-    if( hash->tam / hash->largo >= FACTOR_CARGA_MAXIMO){
-        if( !hash_redimensionar(hash, (size_t) pow(2, ++hash->exponente) ) ){
-            
-            return false;}}
-=======
     if( (double)hash->tam / (double)hash->largo >= FACTOR_CARGA_MAXIMO)
     {
         if( !hash_redimensionar(hash, elevar(++hash->exponente)) )
             return false;
     }
->>>>>>> origin/master
 
     size_t clave_hasheada = hashear(clave, hash->largo);
 
@@ -467,29 +460,20 @@ bool hash_iter_avanzar(hash_iter_t *hash_iter) {
         return true;
     }
     else
-<<<<<<< HEAD
-    {   
+    {
         if(hash_iter->posicion_actual == hash_iter->hash->largo-1){
             hash_iter->items_recorridos++;
             return false;
         }
         lista_t* lista = hash_iter->hash->vector[++hash_iter->posicion_actual];
-=======
-    {
-        lista_t* lista = hash_iter->hash->vector[hash_iter->posicion_actual++];
->>>>>>> origin/master
 
         while(lista == NULL && hash_iter->posicion_actual < hash_iter->hash->largo-1)
         {
             hash_iter->posicion_actual++;
             lista = hash_iter->hash->vector[hash_iter->posicion_actual];
-<<<<<<< HEAD
-            // printf("%d/%d/ %d/%d\n", 
+
+            // printf("%d/%d/ %d/%d\n",
             // hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
-=======
-            //printf("%d/%d/ %d/%d\n",
-            //hash_iter->posicion_actual,hash_iter->hash->largo-1,hash_iter->items_recorridos,hash_iter->hash->tam );
->>>>>>> origin/master
         }
 
         if(!lista)
@@ -578,7 +562,7 @@ bool hash_redimensionar(hash_t* hash, size_t nuevo_largo) {
             hash_guardar(hash,nodo->clave,nodo->dato);
             free(nodo->clave);
             free(nodo);
-            
+
         }
         free(lista_hash);
     }
