@@ -85,6 +85,7 @@ bool lista_insertar_primero(lista_t *lista, void* valor)
 // de la lista.
 bool lista_insertar_ultimo(lista_t *lista, void* valor)
 {
+    if(!lista) return false;
     if(lista_esta_vacia(lista))
         return lista_insertar_primero(lista, valor);
 

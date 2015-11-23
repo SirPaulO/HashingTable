@@ -407,7 +407,6 @@ static void prueba_hash_iterar_volumen(size_t largo)
  *                        FUNCIÓN PRINCIPAL
  * *****************************************************************/
 
-
 void pruebas_hash_catedra()
 {
     /* Ejecuta todas las pruebas unitarias. */

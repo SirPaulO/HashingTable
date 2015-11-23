@@ -97,7 +97,7 @@ bool lista_insertar(lista_t *lista, lista_iter_t *iter, void *dato);
 // Elimina un elemento de la lista en la posicion actual del iterador
 // Pre: el iterador y la lista fueron creados
 // Post: devuelve un puntero al dato del nodo que fue borrado o NULL si algun parametro no es correcto
-void *lista_borrar(lista_t *lista, lista_iter_t *iter);
+void* lista_borrar(lista_t *lista, lista_iter_t *iter);
 
 // Itera la lista aplicandole la funcion visitar a cada dato almacenado, pasandole el parametro extra para que esta lo utilice
 // Pre: la lista fue creada
